@@ -241,6 +241,7 @@ var $WebSocket = (function () {
         return this;
     };
     $WebSocket.prototype.close = function (force) {
+        if (force === void 0) { force = false; }
         if (force || !this.socket.bufferedAmount) {
             this.socket.close();
         }
