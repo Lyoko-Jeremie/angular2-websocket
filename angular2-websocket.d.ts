@@ -42,6 +42,16 @@ export declare class $WebSocket {
      * @returns {Observable<any>}
      */
     send4Observable(data: any): Observable<any>;
+    /**
+     * Return cold Observable
+     * When can Send will next observer
+     * When Socket closed will error observer
+     *
+     * this function will useful when someone use flatMap in Rxjs
+     * @param data
+     * @returns {Observable<any>}
+     */
+    send4OldObservable(data: any): Observable<any>;
     private send4Mode;
     /**
      * Set send(data) function return mode
@@ -88,4 +98,5 @@ export declare enum WebSocketSendMode {
     Direct = 0,
     Promise = 1,
     Observable = 2,
+    OldObservable = 3,
 }

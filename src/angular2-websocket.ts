@@ -138,6 +138,25 @@ export class $WebSocket {
         });
     }
 
+    /**
+     * Return cold Observable
+     * When can Send will next observer
+     * When Socket closed will error observer
+     *
+     * this function will useful when someone use flatMap in Rxjs
+     * @param data
+     * @returns {Observable<any>}
+     */
+    send4OldObservable(data): Observable<any> {
+        return Observable.create((observer) => {
+            if (this.send4Direct(data)) {
+                return observer.next();
+            } else {
+                return observer.error('Socket connection has been closed');
+            }
+        });
+    }
+
     private send4Mode: WebSocketSendMode = WebSocketSendMode.Observable;
 
     /**
@@ -163,6 +182,8 @@ export class $WebSocket {
                 return this.send4Promise(data);
             case WebSocketSendMode.Observable:
                 return this.send4Observable(data);
+            case WebSocketSendMode.OldObservable:
+                return this.send4OldObservable(data);
             default:
                 throw Error("WebSocketSendMode Error.");
         }
@@ -317,6 +338,6 @@ export interface WebSocketConfig {
 }
 
 export enum WebSocketSendMode {
-    Direct, Promise, Observable
+    Direct, Promise, Observable, OldObservable
 }
 

@@ -89,9 +89,8 @@ ws.send("this will be send and return Promise.", WebSocketSendMode.Promise).then
         }
     );
   
-ws.send("this will be send and return Observer.").subscribe(
+ws.send("this will be send and return Observer. Complete when send ok.", WebSocketSendMode.Observable).subscribe(
         (msg)=> {
-            console.log("next", msg.data);
         },
         (msg)=> {
             console.log("error", msg);
@@ -100,9 +99,21 @@ ws.send("this will be send and return Observer.").subscribe(
             console.log("complete");
         }
     );
-
+  
+ws.send("this will be send and return Observer. Next when send ok.", WebSocketSendMode.OldObservable).subscribe(
+        (msg)=> {
+            console.log("next", msg.data);
+        },
+        (msg)=> {
+            console.log("error", msg);
+        }
+    );
+  
 ws.close(false);    // close
 ws.close(true);    // close immediately
 
 
 ```
+
+we have 4 mode to send and return.
+you can see those different in function comment.
