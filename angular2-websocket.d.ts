@@ -12,8 +12,6 @@ export declare class $WebSocket {
     private onErrorCallbacks;
     private onCloseCallbacks;
     private readyStateConstants;
-    private normalCloseCode;
-    private reconnectableStatusCodes;
     private socket;
     private dataStream;
     private internalConnectionState;
@@ -77,6 +75,22 @@ export declare class $WebSocket {
     onError(cb: any): this;
     onMessage(callback: any, options?: any): this;
     onMessageHandler(message: MessageEvent): void;
+    /**
+     * when close code in <code>mustReconnectCloseStatusCodeList</code>, reconnect
+     *  else,
+     *      when <code>true==autoReconnect</code>
+     *              AND code not in <code>notReconnectCloseStatusCodeList</code>, reconnect
+     *      else not reconnect
+     *
+     * so, if code in <code>mustReconnectCloseStatusCodeList</code>, it always reconnect
+     *     else if code in <code>notReconnectCloseStatusCodeList</code>, it always not reconnect
+     *     other case see <code>autoReconnect</code>
+     *
+     * Be careful!!! if you set <code>true==autoReconnect</code>
+     *     but <code>notReconnectCloseStatusCodeList</code> is empty,
+     *     it will always auto connect.
+     *   So, by default, always keep <code>notReconnectCloseStatusCodeList</code> have item <code>1000</code>
+     */
     onCloseHandler(event: CloseEvent): void;
     onErrorHandler(event: any): void;
     reconnect(): this;
@@ -92,7 +106,9 @@ export declare class $WebSocket {
 export interface WebSocketConfig {
     initialTimeout: number;
     maxTimeout: number;
-    reconnectIfNotNormalClose: boolean;
+    autoReconnect: boolean;
+    notReconnectCloseStatusCodeList: Array<number>;
+    mustReconnectCloseStatusCodeList: Array<number>;
 }
 export declare enum WebSocketSendMode {
     Direct = 0,

@@ -36,8 +36,6 @@ export class $WebSocket {
         'CLOSED': 3,
         'RECONNECT_ABORTED': 4
     };
-    private normalCloseCode = 1000;
-    private reconnectableStatusCodes = [4000];
     private socket: WebSocket;
     private dataStream: Subject<any>;
     private internalConnectionState: number;
@@ -47,7 +45,13 @@ export class $WebSocket {
         if (!match) {
             throw new Error('Invalid url provided');
         }
-        this.config = config || {initialTimeout: 500, maxTimeout: 300000, reconnectIfNotNormalClose: false};
+        this.config = config || {
+                initialTimeout: 500,
+                maxTimeout: 300000,
+                autoReconnect: false,
+                notReconnectCloseStatusCodeList: [1000],
+                mustReconnectCloseStatusCodeList: [4000],
+            };
         this.dataStream = new Subject();
         this.connect(true);
     }
@@ -267,10 +271,31 @@ export class $WebSocket {
         }
     };
 
+    /**
+     * when close code in <code>mustReconnectCloseStatusCodeList</code>, reconnect
+     *  else,
+     *      when <code>true==autoReconnect</code>
+     *              AND code not in <code>notReconnectCloseStatusCodeList</code>, reconnect
+     *      else not reconnect
+     *
+     * so, if code in <code>mustReconnectCloseStatusCodeList</code>, it always reconnect
+     *     else if code in <code>notReconnectCloseStatusCodeList</code>, it always not reconnect
+     *     other case see <code>autoReconnect</code>
+     *
+     * Be careful!!! if you set <code>true==autoReconnect</code>
+     *     but <code>notReconnectCloseStatusCodeList</code> is empty,
+     *     it will always auto connect.
+     *   So, by default, always keep <code>notReconnectCloseStatusCodeList</code> have item <code>1000</code>
+     */
     onCloseHandler(event: CloseEvent) {
         this.notifyCloseCallbacks(event);
-        if ((this.config.reconnectIfNotNormalClose && event.code !== this.normalCloseCode)
-            || this.reconnectableStatusCodes.indexOf(event.code) > -1) {
+        if (
+            (
+                this.config.autoReconnect &&
+                this.config.notReconnectCloseStatusCodeList.indexOf(event.code) == -1
+            )
+            || this.config.mustReconnectCloseStatusCodeList.indexOf(event.code) > -1
+        ) {
             this.reconnect();
         } else {
             this.sendQueue = [];
@@ -334,7 +359,9 @@ export class $WebSocket {
 export interface WebSocketConfig {
     initialTimeout: number;
     maxTimeout: number;
-    reconnectIfNotNormalClose: boolean;
+    autoReconnect: boolean;
+    notReconnectCloseStatusCodeList: Array<number>;
+    mustReconnectCloseStatusCodeList: Array<number>;
 }
 
 export enum WebSocketSendMode {
